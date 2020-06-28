@@ -1,9 +1,14 @@
 package it.polito.tdp.seriea;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.seriea.model.Model;
+import it.polito.tdp.seriea.model.Punti;
+import it.polito.tdp.seriea.model.Season;
+import it.polito.tdp.seriea.model.Squalifica;
+import it.polito.tdp.seriea.model.Vicino;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -23,7 +28,7 @@ public class FXMLController {
     private URL location;
 
     @FXML
-    private ChoiceBox<?> boxSquadra;
+    private ChoiceBox<Season> boxSquadra;
 
     @FXML
     private Button btnCalcolaConnessioniSquadra;
@@ -39,18 +44,50 @@ public class FXMLController {
 
     @FXML
     void doAnalizzaStagioni(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	
+    	this.model.creaGrafo();
+    	this.txtResult.appendText("Grafo creato");
+    	
+    	this.boxSquadra.getItems().addAll(this.model.getSeason());
     }
 
     @FXML
     void doCalcolaConnessioniStagione(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	
+    	Season selezionata = this.boxSquadra.getValue();
+    	
+    	if(selezionata == null) {
+    		this.txtResult.appendText("ERRORE, SELEZIONA UNA STAGIONE!");
+    		return;
+    	}
+    	List<Vicino>result = this.model.getSquadreComuni(selezionata);
+    	
+    	this.txtResult.appendText("Le stagioni con squadre comuni a quella selezionata sono: \n");
+    	
+    	for(Vicino v: result) {
+    		this.txtResult.appendText(v.getStagione().getDescription()+" ("+v.getComuni()+")\n");
+    	}
     }
 
     @FXML
     void doSimulaEspulsi(ActionEvent event) {
-
-    }
+    	Season scelta = this.boxSquadra.getValue();
+    	
+    	model.eseguiSimulazione(scelta);
+    	List<Squalifica>squalifica = model.getSqualifiche();
+    	List<Punti>punti= model.getPunti();
+    	
+    	for(Squalifica s: squalifica) 
+    		this.txtResult.appendText(s.getSquadra()+" numero squalifiche "+s.getNumGiornate()+"\n");
+    		
+    	this.txtResult.appendText("\n \n \n \n CLASSIFICA \n\n");
+    	
+    	for(Punti p: punti)
+    		this.txtResult.appendText(p.getSquadra()+" punti: "+p.getPunti()+"\n");
+    	}
+    
 
     @FXML
     void initialize() {
